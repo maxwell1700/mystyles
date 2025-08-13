@@ -76,14 +76,17 @@ const styles = StyleSheet.create({
     paddingTop: height * 0.04,
     paddingHorizontal: width * 0.04,
   },
-  logoContainer: {
-    alignItems: 'flex-end',
+logoContainer: {
+    alignItems: 'center',      // Center horizontally
+    justifyContent: 'center',  // Center vertically if needed
     width: '100%',
-    marginBottom: height * 0.01,
+    marginBottom: height * 0.02,
   },
   logo: {
-    width: width * 0.13,
-    height: width * 0.13,
+    width: width * 0.23,       // Bigger logo
+    height: width * 0.23,
+    marginBottom: 2,
+    alignSelf: 'center',
   },
   headline: {
     fontFamily: fonts.bold,

@@ -1,6 +1,7 @@
 import { useRouter } from 'expo-router';
 import React, { useState } from 'react';
-import { Dimensions, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
+import { Dimensions, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import ScrollPicker from "react-native-wheel-scrollview-picker";
 import { colors, fonts, fontSizes } from '../theme/theme';
 
 const { width, height } = Dimensions.get('window');
@@ -10,21 +11,24 @@ const bodyTypes = ['Slim', 'Athletic', 'Curvy', 'Plus-Size'];
 export default function BodyTypeScreen() {
   const router = useRouter();
   const [selectedType, setSelectedType] = useState<string | null>(null);
-  const [heightInput, setHeightInput] = useState<string>('5 ft 10 in');
-  const [weightInput, setWeightInput] = useState<string>('70 kg');
+
+  const heightOptions = [
+    "4 ft 10 in", "5 ft 0 in", "5 ft 2 in", "5 ft 4 in",
+    "5 ft 6 in", "5 ft 8 in", "5 ft 10 in", "6 ft 0 in"
+  ];
+  const weightOptions = [
+    "50 kg", "55 kg", "60 kg", "65 kg", "70 kg", "75 kg", "80 kg", "85 kg", "90 kg"
+  ];
+
+  const [heightInput, setHeightInput] = useState<string>(heightOptions[4]); // default: 5 ft 6 in
+  const [weightInput, setWeightInput] = useState<string>(weightOptions[4]); // default: 70 kg
 
   return (
     <ScrollView contentContainerStyle={styles.scrollContainer}>
       <View style={styles.container}>
-        {/* Logo */}
-        <View style={styles.logoContainer}>
-          {/* Replace with your logo image if needed */}
-        </View>
         {/* Headline */}
         <Text style={styles.headline}>SELECT YOUR BODY TYPE</Text>
-        <Text style={styles.subheadline}>
-          Be honest. Pick what’s real.{'\n'}No judgment round here.
-        </Text>
+        
         {/* Body Type Buttons */}
         <View style={styles.grid}>
           {bodyTypes.map((type) => (
@@ -41,37 +45,56 @@ export default function BodyTypeScreen() {
             </TouchableOpacity>
           ))}
         </View>
-        {/* Height & Weight Inputs */}
+
+        {/* HEIGHT */}
         <View style={styles.row}>
           <View style={styles.infoButton}>
             <Text style={styles.infoButtonLabel}>HEIGHT</Text>
           </View>
-          <TextInput
-            style={styles.input}
-            value={heightInput}
-            onChangeText={setHeightInput}
-            placeholder="5 ft 10 in"
-            placeholderTextColor="#888"
-            keyboardType="default"
-          />
+          <View style={styles.scrollPickerContainer}>
+            <ScrollPicker
+              dataSource={heightOptions}
+              selectedIndex={heightOptions.indexOf(heightInput)}
+              renderItem={(data) => (
+                <Text style={styles.scrollPickerText}>{data}</Text>
+              )}
+              onValueChange={(data) => setHeightInput(data ?? '')}
+              wrapperBackground="#eaeaea"
+              wrapperHeight={height * 0.07}
+              itemHeight={height * 0.07}
+              highlightColor="#ccc"
+              highlightBorderWidth={1}
+            />
+          </View>
         </View>
+
+        {/* WEIGHT */}
         <View style={styles.row}>
           <View style={styles.infoButton}>
             <Text style={styles.infoButtonLabel}>WEIGHT</Text>
           </View>
-          <TextInput
-            style={styles.input}
-            value={weightInput}
-            onChangeText={setWeightInput}
-            placeholder="70 kg"
-            placeholderTextColor="#888"
-            keyboardType="default"
-          />
+          <View style={styles.scrollPickerContainer}>
+            <ScrollPicker
+              dataSource={weightOptions}
+              selectedIndex={weightOptions.indexOf(weightInput)}
+              renderItem={(data) => (
+                <Text style={styles.scrollPickerText}>{data}</Text>
+              )}
+              onValueChange={(data) => setWeightInput(data ?? '')}
+              wrapperBackground="#eaeaea"
+              wrapperHeight={height * 0.07}
+              itemHeight={height * 0.07}
+              highlightColor="#ccc"
+              highlightBorderWidth={1}
+            />
+          </View>
         </View>
+
         {/* Skip */}
         <TouchableOpacity style={styles.skipRow} onPress={() => router.push('/setGoals')}>
           <Text style={styles.skipText}>SKIP <Text style={styles.arrow}>→</Text></Text>
         </TouchableOpacity>
+
         {/* Continue Button */}
         <TouchableOpacity style={styles.continueButton} onPress={() => router.push('/setGoals')}>
           <Text style={styles.continueButtonText}>CONTINUE</Text>
@@ -94,11 +117,6 @@ const styles = StyleSheet.create({
     paddingTop: height * 0.04,
     paddingHorizontal: width * 0.04,
   },
-  logoContainer: {
-    alignItems: 'flex-end',
-    width: '100%',
-    marginBottom: height * 0.01,
-  },
   headline: {
     fontFamily: fonts.bold,
     fontSize: fontSizes.xxl,
@@ -110,14 +128,6 @@ const styles = StyleSheet.create({
     textShadowColor: '#000',
     textShadowOffset: { width: 2, height: 2 },
     textShadowRadius: 4,
-  },
-  subheadline: {
-    fontFamily: fonts.bold,
-    fontSize: fontSizes.md,
-    color: colors.text,
-    textAlign: 'center',
-    marginBottom: height * 0.02,
-    lineHeight: fontSizes.md * 1.5,
   },
   grid: {
     width: '100%',
@@ -171,19 +181,21 @@ const styles = StyleSheet.create({
     color: colors.primary,
     textAlign: 'center',
   },
-  input: {
+  scrollPickerContainer: {
     backgroundColor: '#eaeaea',
     borderRadius: 20,
-    paddingVertical: height * 0.018,
-    paddingHorizontal: width * 0.03,
     margin: width * 0.015,
     width: width * 0.42,
+    borderWidth: 1,
+    borderColor: '#ccc',
+    justifyContent: 'center',
+    overflow: 'hidden',
+  },
+  scrollPickerText: {
     fontFamily: fonts.bold,
     fontSize: fontSizes.lg,
     color: colors.primary,
     textAlign: 'center',
-    borderWidth: 1,
-    borderColor: '#ccc',
   },
   skipRow: {
     alignSelf: 'flex-end',

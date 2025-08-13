@@ -4,7 +4,7 @@ import { Dimensions, Image, StyleSheet, Text, TouchableOpacity, View } from 'rea
 import images from '../theme/images';
 import { colors, fonts, fontSizes } from '../theme/theme';
 
-const { width } = Dimensions.get('window');
+const { width, height } = Dimensions.get('window');
 
 type OnboardingProps = {
     navigation: any; // Replace 'any' with your navigation prop type if available
@@ -34,16 +34,6 @@ const Onboarding: React.FC = () => {
             <TouchableOpacity style={styles.mainButton} onPress={() => {router.push('/bodyType');}}>
                 <Text style={styles.mainButtonText}>Let’s Build Your Fit →</Text>
             </TouchableOpacity>
-
-            {/* Bottom Buttons */}
-            <View style={styles.bottomRow}>
-                <TouchableOpacity onPress={() => {/* navigation logic */}}>
-                    <Text style={styles.bottomButton}>Log In</Text>
-                </TouchableOpacity>
-                <TouchableOpacity onPress={() => {/* navigation logic */}}>
-                    <Text style={styles.bottomButton}>Skip Setup</Text>
-                </TouchableOpacity>
-            </View>
         </View>
     );
 };
@@ -60,13 +50,16 @@ const styles = StyleSheet.create({
         paddingHorizontal: 16,
     },
     logoContainer: {
-        alignItems: 'center',
-        marginBottom: 8,
+        alignItems: 'center',      // Center horizontally
+        justifyContent: 'center',  // Center vertically if needed
+        width: '100%',
+        marginBottom: height * 0.02, // Slightly more space below
     },
     logo: {
-        width: 60,
-        height: 60,
+        width: width * 0.23,       // Increased from 0.18 to 0.23 for a bigger logo
+        height: width * 0.23,
         marginBottom: 2,
+        alignSelf: 'center',       // Ensure the logo itself is centered
     },
     appName: {
         fontFamily: fonts.bold,
