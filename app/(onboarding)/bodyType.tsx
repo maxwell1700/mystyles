@@ -1,3 +1,5 @@
+import { auth } from '@/src/config/firebaseConfig';
+import { userService } from '@/src/services/userService';
 import { useRouter } from 'expo-router';
 import React, { useState } from 'react';
 import { Dimensions, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
@@ -22,6 +24,29 @@ export default function BodyTypeScreen() {
 
   const [heightInput, setHeightInput] = useState<string>(heightOptions[4]); // default: 5 ft 6 in
   const [weightInput, setWeightInput] = useState<string>(weightOptions[4]); // default: 70 kg
+
+  const handleContinue = async () => {
+  if (!auth.currentUser) {
+    alert('User not signed in');
+    return;
+  }
+
+  const userId = auth.currentUser.uid;
+
+  const data = {
+    bodyType: selectedType,
+    height: heightInput,
+    weight: weightInput,
+  };
+
+  try {
+    await userService.saveUserData(userId, data);
+    router.push('/setGoals');
+  } catch (error: any) {
+    alert('Failed to save data: ' + error.message);
+  }
+};
+
 
   return (
     <ScrollView contentContainerStyle={styles.scrollContainer}>
@@ -96,7 +121,7 @@ export default function BodyTypeScreen() {
         </TouchableOpacity>
 
         {/* Continue Button */}
-        <TouchableOpacity style={styles.continueButton} onPress={() => router.push('/setGoals')}>
+        <TouchableOpacity style={styles.continueButton} onPress={handleContinue} disabled={!selectedType}>
           <Text style={styles.continueButtonText}>CONTINUE</Text>
         </TouchableOpacity>
       </View>

@@ -1,32 +1,65 @@
+import { auth } from '@/src/config/firebaseConfig';
+import { userService } from '@/src/services/userService';
 import * as ImagePicker from 'expo-image-picker';
 import { useRouter } from 'expo-router';
-import React from 'react';
-import { Dimensions, Image, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import React, { useState } from 'react';
+import { Alert, Dimensions, Image, Platform, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { colors, fonts, fontSizes } from '../../theme/theme';
 
 const { width, height } = Dimensions.get('window');
 
 export default function SelfieScreen() {
   const router = useRouter();
+  const [uploading, setUploading] = useState(false);
 
-  // Open camera or library
+  // Function to handle image result
+  const handleSelfieResult = async (uri: string) => {
+    if (!auth.currentUser) {
+      Alert.alert('User not signed in');
+      return;
+    }
+
+    setUploading(true);
+    try {
+      await userService.uploadImage(auth.currentUser.uid, uri, 'selfie');
+      Alert.alert('Selfie uploaded successfully!');
+    } catch (error: any) {
+      Alert.alert('Upload failed', error.message);
+    } finally {
+      setUploading(false);
+    }
+  };
+
+  // Open camera
   const handleTakeSelfie = async () => {
+    if (Platform.OS === 'ios' && !auth.currentUser) {
+      Alert.alert('Camera unavailable in simulator. Use a real device.');
+      return;
+    }
+
     const result = await ImagePicker.launchCameraAsync({
-      mediaTypes: ImagePicker.MediaTypeOptions.Images, // <-- updated
+      mediaTypes: ImagePicker.MediaTypeOptions.Images,
       allowsEditing: true,
       aspect: [1, 1],
       quality: 0.8,
     });
-    // Handle result if needed
+
+    if (!result.canceled) {
+      handleSelfieResult(result.assets[0].uri);
+    }
   };
 
+  // Open gallery
   const handleUploadGallery = async () => {
     const result = await ImagePicker.launchImageLibraryAsync({
-      mediaTypes: ImagePicker.MediaTypeOptions.Images, // <-- updated
-      allowsMultipleSelection: true,
+      mediaTypes: ImagePicker.MediaTypeOptions.Images,
+      allowsMultipleSelection: false,
       quality: 0.8,
     });
-    // Handle result if needed
+
+    if (!result.canceled) {
+      handleSelfieResult(result.assets[0].uri);
+    }
   };
 
   return (
@@ -36,26 +69,31 @@ export default function SelfieScreen() {
         <View style={styles.logoContainer}>
           <Image source={require('../../assets/images/mystyles-logo.png')} style={styles.logo} resizeMode="contain" />
         </View>
+
         {/* Headline */}
         <Text style={styles.headline}>UPLOAD A SELFIE</Text>
         <Text style={styles.subheadline}>
           We’ll never post without your permission.{'\n'}
           This is just for outfit magic.
         </Text>
+
         {/* Options */}
         <View style={styles.optionsGrid}>
-          <TouchableOpacity style={styles.optionButton} onPress={handleTakeSelfie}>
-            <Text style={styles.optionButtonText}>TAKE A SELFIE</Text>
+          <TouchableOpacity style={styles.optionButton} onPress={handleTakeSelfie} disabled={uploading}>
+            <Text style={styles.optionButtonText}>{uploading ? 'UPLOADING...' : 'TAKE A SELFIE'}</Text>
           </TouchableOpacity>
-          <TouchableOpacity style={styles.optionButton} onPress={handleUploadGallery}>
-            <Text style={styles.optionButtonText}>UPLOAD A GALLERY</Text>
+
+          <TouchableOpacity style={styles.optionButton} onPress={handleUploadGallery} disabled={uploading}>
+            <Text style={styles.optionButtonText}>{uploading ? 'UPLOADING...' : 'UPLOAD FROM GALLERY'}</Text>
           </TouchableOpacity>
-          <TouchableOpacity style={styles.optionButton} onPress={() => router.push('/preference')}>
+
+          <TouchableOpacity style={styles.optionButton} onPress={() => router.push('/preference')} disabled={uploading}>
             <Text style={styles.optionButtonText}>SKIP FOR NOW</Text>
           </TouchableOpacity>
         </View>
+
         {/* Continue Button */}
-        <TouchableOpacity style={styles.continueButton} onPress={() => router.push('/preference')}>
+        <TouchableOpacity style={styles.continueButton} onPress={() => router.push('/preference')} disabled={uploading}>
           <Text style={styles.continueButtonText}>CONTINUE</Text>
         </TouchableOpacity>
       </View>
@@ -76,14 +114,14 @@ const styles = StyleSheet.create({
     paddingTop: height * 0.04,
     paddingHorizontal: width * 0.04,
   },
-logoContainer: {
-    alignItems: 'center',      // Center horizontally
-    justifyContent: 'center',  // Center vertically if needed
+  logoContainer: {
+    alignItems: 'center',
+    justifyContent: 'center',
     width: '100%',
     marginBottom: height * 0.02,
   },
   logo: {
-    width: width * 0.23,       // Bigger logo
+    width: width * 0.23,
     height: width * 0.23,
     marginBottom: 2,
     alignSelf: 'center',

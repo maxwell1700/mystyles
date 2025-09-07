@@ -1,4 +1,5 @@
 export default {
+  logo: require('../assets/images/mystyles-logo.png'),
   onboarding1: require('../assets/images/onboarding-graphic.png'),
   onboarding2: require('../assets/images/body-type.png'),
   onboarding3: require('../assets/images/set-goals.png'),

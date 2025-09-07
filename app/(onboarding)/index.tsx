@@ -12,7 +12,7 @@ export default function OnboardingScreen() {
         <View style={styles.container}>
             {/* Logo and App Name */}
             <View style={styles.logoContainer}>
-                <Image source={require('../../assets/images/mystyles-logo.png')} style={styles.logo} resizeMode="contain" />
+                <Image source={images.logo} style={styles.logo} resizeMode="contain" />
             </View>
 
             {/* Headline */}

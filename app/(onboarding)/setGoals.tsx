@@ -1,3 +1,5 @@
+import { auth } from '@/src/config/firebaseConfig';
+import { userService } from '@/src/services/userService';
 import { useRouter } from 'expo-router';
 import React, { useState } from 'react';
 import { Dimensions, Image, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
@@ -22,7 +24,29 @@ export default function SetGoalsScreen() {
         ? prev.filter((g) => g !== goal)
         : [...prev, goal]
     );
+
+  
   };
+  const handleContinue = async () => {
+  if (!auth.currentUser) {
+    alert('User not signed in');
+    return;
+  }
+
+  const userId = auth.currentUser.uid;
+
+  // Save the selected goals
+  const data = {
+    goals: selected,
+  };
+
+  try {
+    await userService.saveUserData(userId, data);
+    router.push('/gender'); // navigate after saving
+  } catch (error: any) {
+    alert('Failed to save goals: ' + error.message);
+  }
+};
 
   return (
     <ScrollView contentContainerStyle={styles.scrollContainer}>
@@ -54,7 +78,7 @@ export default function SetGoalsScreen() {
           ))}
         </View>
         {/* Continue Button */}
-        <TouchableOpacity style={styles.continueButton} onPress={() => router.push('/gender')}>
+        <TouchableOpacity style={styles.continueButton} onPress={handleContinue}>
           <Text style={styles.continueButtonText}>CONTINUE</Text>
         </TouchableOpacity>
       </View>

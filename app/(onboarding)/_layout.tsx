@@ -1,16 +1,16 @@
 import { Stack } from 'expo-router';
 import React from 'react';
-import { useUser } from '../../src/hooks/useUser';
+
 
 export default function OnboardingLayout() {
-  const { user, loading } = useUser();
+  // const { user, loading } = useUser();
 
-  // If the user is already logged in and has completed onboarding,
-  // redirect them to the main app
-  if (!loading && user) {
-    // router.replace('/(main)');
-    // Uncomment above line when ready to implement redirect
-  }
+  // // If the user is already logged in and has completed onboarding,
+  // // redirect them to the main app
+  // if (!loading && user) {
+  //   // router.replace('/(main)');
+  //   // Uncomment above line when ready to implement redirect
+  // }
 
   return (
     <Stack>

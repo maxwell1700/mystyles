@@ -1,3 +1,5 @@
+import { auth } from '@/src/config/firebaseConfig';
+import { userService } from '@/src/services/userService';
 import { useRouter } from 'expo-router';
 import React, { useState } from 'react';
 import { Dimensions, Image, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
@@ -23,6 +25,26 @@ const genderOptions = [
 export default function GenderScreen() {
   const router = useRouter();
   const [selected, setSelected] = useState<string | null>(null);
+
+  const handleContinue = async () => {
+    if (!auth.currentUser) {
+      alert('User not signed in');
+      return;
+    }
+  
+    const userId = auth.currentUser.uid;
+  
+    const data = {
+      gender: selected
+    };
+  
+    try {
+      await userService.saveUserData(userId, data);
+      router.push('/selfies');
+    } catch (error: any) {
+      alert('Failed to save data: ' + error.message);
+    }
+  };
 
   return (
     <ScrollView contentContainerStyle={styles.scrollContainer}>
@@ -56,7 +78,7 @@ export default function GenderScreen() {
         {/* Continue Button */}
         <TouchableOpacity
           style={styles.continueButton}
-          onPress={() => router.push('/selfies')}
+          onPress={handleContinue}
           disabled={!selected}
         >
           <Text style={styles.continueButtonText}>CONTINUE</Text>

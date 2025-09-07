@@ -1,65 +1,63 @@
-import { FirebaseAuthTypes } from '@react-native-firebase/auth';
-import { auth, db } from '../config/firebase';
-import { UserPreferences } from '../types';
+// services.ts
+import { doc, getDoc, setDoc } from 'firebase/firestore';
+import { getDownloadURL, ref, uploadBytes } from 'firebase/storage';
+import { db, storage } from '../config/firebaseConfig';
 
-class UserService {
-  async createUser(email: string, password: string): Promise<FirebaseAuthTypes.User | null> {
+export const userService = {
+  saveUserData: async (userId: string, data: Record<string, any>) => {
     try {
-      const userCredential = await auth().createUserWithEmailAndPassword(email, password);
-      return userCredential.user;
-    } catch (error) {
-      console.error('Error creating user:', error);
-      throw error;
-    }
-  }
-
-  async signIn(email: string, password: string): Promise<FirebaseAuthTypes.User | null> {
-    try {
-      const userCredential = await auth().signInWithEmailAndPassword(email, password);
-      return userCredential.user;
-    } catch (error) {
-      console.error('Error signing in:', error);
-      throw error;
-    }
-  }
-
-  async saveUserPreferences(userId: string, preferences: UserPreferences): Promise<void> {
-    try {
-      await db().collection('users').doc(userId).set({
-        preferences,
-        updatedAt: new Date().toISOString(),
-      }, { merge: true });
-    } catch (error) {
-      console.error('Error saving preferences:', error);
-      throw error;
-    }
-  }
-
-  async getUserPreferences(userId: string): Promise<UserPreferences | null> {
-    try {
-      const docSnapshot = await db().collection('users').doc(userId).get();
-      const data = docSnapshot.data();
-      return data?.preferences ?? null;
-    } catch (error) {
-      console.error('Error getting preferences:', error);
-      throw error;
-    }
-  }
-
-  // Method to save onboarding data
-  async saveOnboardingData(userId: string, step: string, data: any): Promise<void> {
-    try {
-      await db().collection('users').doc(userId).set({
-        onboarding: {
-          [step]: data,
+      const userDocRef = doc(db, 'users', userId);
+      await setDoc(
+        userDocRef,
+        {
+          ...data,
           updatedAt: new Date().toISOString(),
-        }
-      }, { merge: true });
+        },
+        { merge: true }
+      );
     } catch (error) {
-      console.error('Error saving onboarding data:', error);
+      console.error('Error saving user data:', error);
       throw error;
     }
-  }
-}
+  },
 
-export const userService = new UserService();
+  getUserData: async (userId: string) => {
+    try {
+      const userDocRef = doc(db, 'users', userId);
+      const docSnapshot = await getDoc(userDocRef);
+      return docSnapshot.exists() ? docSnapshot.data() : null;
+    } catch (error) {
+      console.error('Error fetching user data:', error);
+      throw error;
+    }
+  },
+
+
+  /**
+   * Upload an image to Firebase Storage and save its URL to Firestore
+   * @param userId - Firebase UID
+   * @param uri - local file URI
+   * @param field - Firestore field name to save the URL (e.g., 'selfie')
+   */
+  async uploadImage(userId: string, uri: string, field: string): Promise<void> {
+    try {
+      // Convert local file URI to Blob
+      const response = await fetch(uri);
+      const blob = await response.blob();
+
+      // Create a storage reference
+      const storageRef = ref(storage, `users/${userId}/${field}.jpg`);
+
+      // Upload the file
+      await uploadBytes(storageRef, blob);
+
+      // Get the download URL
+      const downloadURL = await getDownloadURL(storageRef);
+
+      // Save URL to Firestore
+      await this.saveUserData(userId, { [field]: downloadURL });
+    } catch (error) {
+      console.error('Error uploading image:', error);
+      throw error;
+    }}
+};
